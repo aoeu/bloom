@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/binary"
+	"errors"
 	"fmt"
 	"hash"
 	"hash/fnv"
-	"encoding/binary"
-	"math/rand"
-	"errors"
 	"log"
+	"math/rand"
 )
 
 // TODO(aoeu): There's libraries with bit arrays for bit torrent - "bit set" - check them out.
@@ -15,24 +15,23 @@ type bitarray []bool
 
 type BloomFilter struct {
 	bitarray
-	seeds []int64
+	seeds  []int64
 	hasher hash.Hash32
 }
-
 
 func New(numHashFunctions int) (*BloomFilter, error) {
 	k := numHashFunctions
 	m := 1024
 	if k < 1 {
-		return new(BloomFilter), errors.New(fmt.Sprintf("A bloom filter must have more than 0 hash functions: %v\n", k)) 
+		return new(BloomFilter), errors.New(fmt.Sprintf("A bloom filter must have more than 0 hash functions: %v\n", k))
 	}
 	if k >= 255 {
 		return new(BloomFilter), errors.New(fmt.Sprintf("A bloom filter must have less than 255 hash functions: %v\n", k))
 	}
 	b := &BloomFilter{
-		bitarray : make(bitarray, m),
-		seeds : make([]int64, k, k),
-		hasher : fnv.New32(),
+		bitarray: make(bitarray, m),
+		seeds:    make([]int64, k, k),
+		hasher:   fnv.New32(),
 	}
 	rng := rand.New(rand.NewSource(777))
 	for i := 0; i < k; i++ {
@@ -68,30 +67,29 @@ func (b *BloomFilter) MightContain(value interface{}) bool {
 			return false
 		}
 	}
-	return true	
+	return true
 }
 
-
-  /*
-   * Cheat sheet:
-   *
-   * m: total bits
-   * n: expected insertions
-   * b: m/n, bits per insertion
-   * p: expected false positive probability
-   * k: number of hashes
-   *
-   * 1) Optimal k = b * ln2
-   * 2) p = (1 - e ^ (-kn/m))^k
-   * 3) For optimal k: p = 2 ^ (-k) ~= 0.6185^b
-   * 4) For optimal k: m = -nlnp / ((ln2) ^ 2)
-   */
+/*
+ * Cheat sheet:
+ *
+ * m: total bits
+ * n: expected insertions
+ * b: m/n, bits per insertion
+ * p: expected false positive probability
+ * k: number of hashes
+ *
+ * 1) Optimal k = b * ln2
+ * 2) p = (1 - e ^ (-kn/m))^k
+ * 3) For optimal k: p = 2 ^ (-k) ~= 0.6185^b
+ * 4) For optimal k: m = -nlnp / ((ln2) ^ 2)
+ */
 
 /*
 func (b *BloomFilter) expectedFalsePositiveProbability {
 	bitSize := 1 // TODO(aoeu): What value is this supposed to be?
 	return math.Pow(len(b.bits) / bitSize, b.numHashFunctions)
-	// TODO(aoeu): This should be (1 - e ^ (-kn/m)) ^ k 
+	// TODO(aoeu): This should be (1 - e ^ (-kn/m)) ^ k
 }
 
 / Computes the optimal k (number of hashes per element inserted in Bloom filter), given the
@@ -118,7 +116,7 @@ func New(expectedInsertions float64, falsePostiveRate float64) {
 	b, err := New(numHashFunctions)
 `	if err != nil {
 		return b, err
-	}	
+	}
 	b.bits = make(bitarray, numBits)
 	return b, nil
 }
@@ -136,7 +134,7 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(bf.MightContain([]byte("foo")))
-		
+
 	bf.Put([]byte("bar"))
 	fmt.Println(bf.MightContain([]byte("bar")))
 
