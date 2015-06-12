@@ -56,10 +56,15 @@ import "C"
 
 import (
 	"fmt"
+	"flag"
 )
 
+
+
 func main() {
-	key := "key"
+	var key string
+	flag.StringVar(&key, "key", "foobarbazqux", "the key to use in the murmur 32 hash")
+	flag.Parse()
 	i := C.murmur3_32(C.CString(key), 64, 128) 
 	fmt.Println(i)
 }
