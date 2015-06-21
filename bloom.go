@@ -20,7 +20,7 @@ type BloomFilter struct {
 
 func New(numHashFunctions int) (*BloomFilter, error) {
 	k := numHashFunctions
-	m := 1024
+	m := 1024  // TODO(aoeu): Use number of expected insertions as an input parameter.
 	if k < 1 {
 		return new(BloomFilter), errors.New(fmt.Sprintf("A bloom filter must have more than 0 hash functions: %v\n", k))
 	}
